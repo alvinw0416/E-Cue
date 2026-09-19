@@ -1,23 +1,22 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 
-class PluginProcessor : public juce::AudioProcessor 
+class Processor : public juce::AudioProcessor 
 {
 public:
-    // CONSTRUCTOR/DESTRUCTOR
-    PluginProcessor();
-    ~PluginProcessor() override;
+    Processor();
+    ~Processor() override;
 
-    // OPERATION
+    // Operation
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
     void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
         
-    // EDITOR INIT
+    // Editor Initialization
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
         
-    // PLUGIN METADATA
+    // Metadata
     const juce::String getName() const override;
     bool acceptsMidi() const override;
     bool producesMidi() const override;
@@ -28,7 +27,10 @@ public:
     const juce::String getProgramName(int) override;
     void changeProgramName(int, const juce::String&) override;
 
-    // STATE
+    // State
     void getStateInformation(juce::MemoryBlock&) override;
     void setStateInformation(const void*, int) override;
+
+    // ------------------------------------------------------- Here starts other members/methods
+    //
 };
