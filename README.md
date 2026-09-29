@@ -3,6 +3,7 @@
 **A 4-band parametric EQ plugin (VST3) built with JUCE/C++.**
 
 **Author**: Alvin Wang
+
 Sep 2026 - Present
 
 ![Screenshot of E-Cue Plugin](assets/screenshot.png)
