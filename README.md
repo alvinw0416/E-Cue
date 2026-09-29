@@ -5,7 +5,7 @@
 **Author**: Alvin Wang
 Sep 2026 - Present
 
-![Screenshot of E-Cue Plugin](assets/image.png)
+![Screenshot of E-Cue Plugin](assets/screenshot.png)
 
 ## Overview
 E-Cue is a 4-band parametric equalizer, each band having frequency, Q, and gain controls. I built this as a learning project to understand the interaction and communication between the GUI (editor) and audio (processor) threads, as well as the general JUCE framework.
