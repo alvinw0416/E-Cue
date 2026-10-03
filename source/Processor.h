@@ -38,28 +38,28 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout buildLayout();
     juce::AudioProcessorValueTreeState apvts;
 
-
+    
     std::atomic<int> heldBand { -1 }; // Processor's local copy of held band, -1 = none, 0-3 = bands 1-4
 
     // Listener for gesture event from a single band
     struct BandGesture : juce::AudioProcessorParameter::Listener
     {
-        BandGesture(std::atomic<int>& heldBand_ref, int myband) 
-        : heldBand_ref(heldBand_ref), myband(myband) {}
+        BandGesture(std::atomic<int>& heldBand_ref, int myAssignedBand) 
+        : heldBand_ref(heldBand_ref), myAssignedBand(myAssignedBand) {}
 
         std::atomic<int>& heldBand_ref;
-        int myband;
+        int myAssignedBand;
 
         void parameterValueChanged(int, float) override {}  // unused but required
         void parameterGestureChanged(int, bool started) override
         {
             if (started)
-                heldBand_ref.store(myband);
+                heldBand_ref.store(myAssignedBand);
             else
                 heldBand_ref.store(-1);
         }
     };
-    std::unique_ptr<BandGesture> gest_listeners[4];
+    std::unique_ptr<BandGesture> listeners[4];
 
     // AudioParameterFloat IDs per band
     static constexpr const char* apfIDs[4][3] = {
@@ -70,11 +70,11 @@ public:
     
     
     // Smoothing vars
-    struct ParamSmoother
+    struct SmoothedBand
     {
         juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> freq, q, gain;
     };
-    ParamSmoother b1_Sm, b2_Sm, b3_Sm, b4_Sm;
+    SmoothedBand b1_Sm, b2_Sm, b3_Sm, b4_Sm;
 
     // Cached GUI params
     std::atomic<float> *b1_Freq, *b2_Freq, *b3_Freq, *b4_Freq; 
@@ -83,7 +83,7 @@ public:
 
     std::atomic<float> *b1_HPF, *b4_LPF, *Enabled, *Audition;
 
-    // Filter OBJs
+    // Filter Objects
     double smpRate;
     juce::dsp::IIR::Filter<float> b1_Lfilt, b2_Lfilt, b3_Lfilt, b4_Lfilt;
     juce::dsp::IIR::Filter<float> b1_Rfilt, b2_Rfilt, b3_Rfilt, b4_Rfilt;

@@ -22,7 +22,7 @@ The GUI is currently a barebones layout using JUCE's default components and look
 ## Building
 Requirements:
 - CMake 3.23+
-- Visual Studio 2022 with the "Desktop development with C++" workload
+- Visual Studio 2022 with the "Desktop Development with C++" workload
 - Git and an internet connection (JUCE 8.0.14 is downloaded automatically by CMake on the first configure)
 
 Build:

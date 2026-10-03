@@ -18,7 +18,8 @@ public:
     void resized() override
     {
         auto area = getLocalBounds();
-        label.setBounds(area.removeFromTop (18));
+        area.removeFromTop(10);
+        label.setBounds(area.removeFromTop(15));
         slider.setBounds(area);
     }
 private:

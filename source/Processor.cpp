@@ -10,20 +10,20 @@ Processor::Processor()
         b1_HPF(apvts.getRawParameterValue("b1_hpf")), b4_LPF(apvts.getRawParameterValue("b4_lpf")),
         Enabled(apvts.getRawParameterValue("enabled")), Audition(apvts.getRawParameterValue("audition")) 
 {
-    // Add a listener to each parameter APF
+    // Init a listener to each parameter APF
     for (int i = 0; i < 4; i++)
     {
-        gest_listeners[i] = std::make_unique<BandGesture>(heldBand, i);
+        listeners[i] = std::make_unique<BandGesture>(heldBand, i);
         for (auto* id : apfIDs[i])
-            apvts.getParameter(id)->addListener(gest_listeners[i].get());
+            apvts.getParameter(id)->addListener(listeners[i].get());
     }
 }
 Processor::~Processor() 
 {
-    // Remove all gesture listeners from APFs
+    // Remove all listeners
     for (int i = 0; i < 4; i++)
         for (auto* id : apfIDs[i])
-            apvts.getParameter(id)->removeListener(gest_listeners[i].get());
+            apvts.getParameter(id)->removeListener(listeners[i].get());
 }
 
 void Processor::prepareToPlay(double sampleRate, int samplesPerBlock) 
@@ -77,7 +77,7 @@ void Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&
     if (Enabled->load() < 0.5f) // Skip processing if EQ not enabled
         return;
 
-    // Set target for smoothed values for this buffer
+    // Query for target value to smooth towards
     b1_Sm.freq.setTargetValue(b1_Freq->load());
     b2_Sm.freq.setTargetValue(b2_Freq->load());
     b3_Sm.freq.setTargetValue(b3_Freq->load());
@@ -91,16 +91,9 @@ void Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&
     b3_Sm.gain.setTargetValue(juce::Decibels::decibelsToGain(b3_Gain->load()));
     b4_Sm.gain.setTargetValue(juce::Decibels::decibelsToGain(b4_Gain->load()));
 
-    // Audition, poll currently held band, if any
-    int blockheld = -1;
-    if (Audition->load() > 0.5f)
-        blockheld = heldBand.load();
-    else
-        blockheld = -1;
+    SmoothedBand* Sm[4] = { &b1_Sm, &b2_Sm, &b3_Sm, &b4_Sm };   // allows us to index by band number for audition
 
-    ParamSmoother* sm[4] = { &b1_Sm, &b2_Sm, &b3_Sm, &b4_Sm };   // allows us to index by band number for audition
-
-    // Processing, by chunks:
+    // Processing, by chunks of 32:
     for (int cursmp = 0; cursmp < buffer.getNumSamples(); cursmp += 32)
     {
         int chunksize = std::min(32, buffer.getNumSamples() - cursmp);
@@ -136,7 +129,6 @@ void Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&
         b3_Rfilt.coefficients = b3_Lfilt.coefficients;
 
         // Process samples for this chunk
-        
         // Left channel
         auto* wr_ptr = buffer.getWritePointer(0); 
         for (int i = cursmp; i < cursmp + chunksize; i++)
@@ -146,7 +138,6 @@ void Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&
             wr_ptr[i] = b3_Lfilt.processSample(wr_ptr[i]);
             wr_ptr[i] = b4_Lfilt.processSample(wr_ptr[i]);
         }
-
         // Right channel
         if (totalNumInputChannels > 1)
         {
@@ -160,10 +151,10 @@ void Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&
             }
         }
 
-        // Audition bandpass after everything else
-        if (blockheld >= 0)
+        // Audition bandpass after all else
+        if (heldBand.load() >= 0)
         {
-            auto& s = *sm[blockheld];
+            auto& s = *Sm[heldBand.load()];
             auditL.coefficients = juce::dsp::IIR::Coefficients<float>::makeBandPass(smpRate, s.freq.getCurrentValue(), s.q.getCurrentValue());
             auditR.coefficients = auditL.coefficients;
 

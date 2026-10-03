@@ -10,7 +10,7 @@ Editor::Editor(Processor& p)
     lpfAttach(p.apvts, "b4_lpf", lpfButton)
 {
     const char* ids[] = { "freq", "q", "gain" };
-    const char* names[] = { "Freq", "Q", "Gain" };
+    const char* names[] = { "Frequency", "Q", "Gain" };
 
     for (int band = 1; band <= 4; band++)
         for (int i = 0; i < 3; i++)
@@ -59,7 +59,7 @@ Editor::~Editor() {}
 
 void Editor::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colour(0xff585e5e));     // Dim teal-ish gray BG
+    g.fillAll(juce::Colour(0xff535a5a));     // Dim teal-ish gray BG
 }
 
 void Editor::resized()
